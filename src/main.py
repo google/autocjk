@@ -16,12 +16,10 @@
 from absl import app
 from absl import flags
 from src import imageutils
+from models import generator_lib
 from typing import Sequence
 import os
 import tensorflow as tf
-
-_GENERATOR_H5_PATH = os.path.join(
-    os.path.split(__file__)[0], "models/generator.h5")
 
 _FONT_PATH = flags.DEFINE_string("font_path", None, "Font file to use.")
 _LHS = flags.DEFINE_string("lhs", None, "Left-hand character.")
@@ -41,7 +39,7 @@ def main(argv: Sequence[str]) -> None:
         raise app.UsageError("Must provide a --font_path.")
 
     # Load in the generator,
-    generator = tf.keras.models.load_model(_GENERATOR_H5_PATH)
+    generator = tf.keras.models.load_model(generator_lib.PATH_TO_GENERATOR)
     imageutils.predict(generator, _FONT_PATH.value, _LHS.value, _RHS.value,
                        _OUT.value)
 

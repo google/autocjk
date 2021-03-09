@@ -12,6 +12,36 @@ Example:
 
 ## Quickstart
 
+* First clone this repo. 
+
+  ```bash
+  git clone git@github.com:google/autocjk.git
+  ```
+
+* You will also need to install [git-lfs](https://git-lfs.github.com/) to
+  download the large generator files.
+
+  ```bash
+  sudo apt-get install git-lfs
+  git lfs pull
+  ```
+
+* You will also need `pip3>=19.0` in order to install `tensorflow>=2.3.0`. 
+  This part is finicky and should be done manually, not through bazel pip 
+  requirements.
+
+  ```bash
+  pip3 install --upgrade pip
+  pip3 install "tensorflow>=2.3.0"
+  ```
+
+* You will also need
+  [Harfbuzz](https://harfbuzz.github.io/install-harfbuzz.html) for font shaping.
+
+  ```bash
+  sudo apt-get install libharfbuzz-bin
+  ```
+
 ### How do I generate a new character?
 
 For example, given a font at `~/Downloads/font.otf`, we can render `⿰市來` and
