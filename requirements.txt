@@ -1,0 +1,12 @@
+backcall
+PyICU
+fonttools
+ipython
+imagehash
+image
+ipython_genutils
+pickleshare
+prompt_toolkit
+protobuf==3.12.4
+traitlets
+wcwidth
