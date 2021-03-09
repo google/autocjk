@@ -18,8 +18,9 @@ py_library(
     ],
     srcs_version = "PY3",
     deps = [
-        requirement("imagehash"),
         requirement("image"),
+        requirement("imagehash"),
+        requirement("numpy"),
     ],
 )
 
@@ -96,8 +97,9 @@ py_binary(
     srcs = [
         "main.py",
     ],
-    data = ["//models:generator"],
     deps = [
         ":imageutils",
+        "//models:generator_lib",
+        requirement("absl-py"),
     ],
 )

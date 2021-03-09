@@ -1,10 +1,12 @@
-backcall
 PyICU
+absl-py
+backcall
 fonttools
-ipython
-imagehash
 image
+imagehash
+ipython
 ipython_genutils
+numpy
 pickleshare
 prompt_toolkit
 protobuf==3.12.4
