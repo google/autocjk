@@ -20,7 +20,10 @@ jobs:
       
     - name: Install non-Bazel Python dependencies
       run: |
+        uname -m
+        python3 --version
         pip3 install --upgrade pip
+        pip3 --version
         pip3 install "tensorflow>=2.3.0"
       
     - name: Bazel build
