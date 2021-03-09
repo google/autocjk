@@ -1,0 +1,36 @@
+name: Bazel build and test
+on:
+  pull_request:
+    branches:
+      - main
+jobs:
+  bazel:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup bazel
+      uses: jwlawson/actions-setup-bazel@v1
+      with:
+        bazel-version: '3.2.0'
+        
+    - name: Checkout
+      uses: actions/checkout@v1
+      
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+        architecture: 'x64' 
+      
+    - name: Install non-Bazel Python dependencies
+      run: |
+        uname -m
+        python3 --version
+        pip3 install --upgrade pip
+        pip3 --version
+        pip3 install "tensorflow>=2.3.0"
+      
+    - name: Bazel build
+      run: bazel build ...
+      
+    - name: Bazel test
+      run: bazel test ... --test_output=streamed
