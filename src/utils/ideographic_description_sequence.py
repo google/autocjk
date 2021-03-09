@@ -48,6 +48,7 @@ class IdeographicSequence:
     character: The character (u'你').
     decomposition: The IDS ("⿰亻尔").
   """
+
     def __init__(self,
                  character: Text,
                  decomposition: Optional[Text] = None,
@@ -101,7 +102,8 @@ class IdeographicSequence:
                 output.append(c)
                 continue
             elif expanded != c:
-                # If the character had an expansion, let's recurse before appending.
+                # If the character had an expansion, let's recurse before
+                # appending.
                 output.extend(self._expand(expanded, lookup_cb))
             else:
                 # Otherwise the character can be pushed as-is.
@@ -123,6 +125,7 @@ class IdeographicSequenceGroup:
   Attributes:
     default_sequence: The default Sequence for this IdeographicSequenceGroup.
   """
+
     def __init__(self, sequence: IdeographicSequence):
         """Instantiates a IdeographicSequenceGroup with a default for all regions.
 

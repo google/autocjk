@@ -16,4 +16,7 @@
 
 import os
 
-PATH_TO_GENERATOR = os.path.join(os.sep, *os.path.split(__file__)[0].split('/'), "generator.h5")
+PATH_TO_GENERATOR = os.path.join(
+    os.sep,
+    *os.path.split(__file__)[0].split('/'),
+    "generator.h5")

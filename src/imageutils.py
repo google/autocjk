@@ -111,7 +111,8 @@ def predict_from_paths(generator, lhs_path: Text, rhs_path: Text,
     lhs_image = tf.cast(lhs_image, tf.float32)
     rhs_image = tf.cast(rhs_image, tf.float32)
 
-    # Create a tf.Tensor[256,256,2] tensor of the LHS and RHS images superimposed.
+    # Create a tf.Tensor[256,256,2] tensor of the LHS and RHS images
+    # superimposed.
     inputs = tf.concat([lhs_image, rhs_image], 2)
 
     # ...and predict an image.
