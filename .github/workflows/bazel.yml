@@ -1,8 +1,8 @@
-name: Format python code
+name: Bazel build and test
 on:
   pull_request:
     branches:
-      - master
+      - main
 jobs:
   example:
     runs-on: ubuntu-latest
