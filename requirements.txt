@@ -1,11 +1,14 @@
 PyICU
 absl-py
 backcall
+decorator
 fonttools
 image
 imagehash
 ipython
 ipython_genutils
+more_itertools
+networkx
 numpy
 pickleshare
 prompt_toolkit
