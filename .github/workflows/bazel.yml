@@ -1,0 +1,17 @@
+name: Format python code
+on:
+  pull_request:
+    branches:
+      - master
+jobs:
+  example:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup bazel
+      uses: jwlawson/actions-setup-bazel@v1
+      with:
+        bazel-version: '2.0.0'
+    - name: Bazel build
+      run: bazel build ...
+    - name: Bazel test
+      run: bazel test ...
