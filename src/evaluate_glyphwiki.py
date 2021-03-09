@@ -153,9 +153,9 @@ def calculate_wrongness(generator,
     with tempfile.NamedTemporaryFile(
             delete=False, suffix=".png") as predicted_file, open(
                 os.path.join(out_dir, f"0x{ord(character):d}.png"), "wb"
-            ) as out_file, tempfile.NamedTemporaryFile(
+    ) as out_file, tempfile.NamedTemporaryFile(
                 suffix=".png"
-            ) as superimposed_file, tempfile.NamedTemporaryFile(
+    ) as superimposed_file, tempfile.NamedTemporaryFile(
                 suffix=".png") as lhs_file, tempfile.NamedTemporaryFile(
                     suffix=".png") as rhs_file, tempfile.NamedTemporaryFile(
                         suffix=".png") as actual_file:

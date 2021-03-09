@@ -79,6 +79,7 @@ def _build_paths(g: nx.DiGraph, node: Any, data_lookup: Callable[[Dict[K, V]],
 
 class NoDecompositionError(Exception):
     """Used when the Decomposer class has no decomposition for a character."""
+
     def __init__(self, character: Text):
         super().__init__(self)
         self.character = character
@@ -160,6 +161,7 @@ def parse(
 
 class Decomposer():
     """A class for holding sequences and retrieving them."""
+
     def __init__(self):
 
         # Graph where the nodes are unicode characters and the edges are "contains"

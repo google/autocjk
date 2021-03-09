@@ -16,4 +16,7 @@
 
 import os
 
-PATH_TO_IDS_TXT = os.path.join(os.sep, *os.path.split(__file__)[0].split('/'), "IDS.TXT")
+PATH_TO_IDS_TXT = os.path.join(
+    os.sep,
+    *os.path.split(__file__)[0].split('/'),
+    "IDS.TXT")

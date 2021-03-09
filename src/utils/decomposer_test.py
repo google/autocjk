@@ -144,7 +144,8 @@ class DecomposerTest(googletest.TestCase):
         self.assertEqual(
             DECOMPOSER_.decompose(region.Region.G, "亟").decomposition, "⿱⿻了叹一")
 
-    # There are some characters we cannot decompose! Maybe ids.txt has a ? in it.
+    # There are some characters we cannot decompose! Maybe ids.txt has a ? in
+    # it.
     def test_thirdparty_database_cannot_decompose(self):
         with self.assertRaises(decomposer.NoDecompositionError) as _:
             # U+22016 ⿱ス工 contains a katakana (ス) for which ids.txt has no
