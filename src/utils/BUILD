@@ -43,6 +43,9 @@ py_test(
     ],
     srcs_version = "PY3",
     deps = [
+        requirement("decorator"),
+        requirement("more_itertools"),
+        requirement("networkx"),
         ":decomposer",
         ":ideographic_description_sequence",
         ":region",
