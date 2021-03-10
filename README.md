@@ -78,34 +78,3 @@ save that model as `src/generator.h5`, you can continue to use `bazel run //src:
    # pip install mdformat
    find . -iname 'README.md' | xargs mdformat
    ```
-
-## TODO
-
-1. Write evaluator scripts.
-
-   It should be pretty simple to compare a `generator.h5` against existing
-   fonts for an out-of-sample pixel-difference evaluation.
-
-1. Support a wider range of IDS sequences.
-
-   At the moment this generator can only render characters with an IDS like
-   "⿰XY". We should support "⿱XY", "⿲XYZ", "⿳XYZ", etc, etc. These will
-   be trickier.
-
-1. Support region-aware generation.
-
-   Most of the training and testing was performed in cn-zh. But the underlying
-   utilities and fonts certainly support a wider range of regions.
-
-1. Enable python typed libraries / binaries.
-
-   This is probably quite simple in Bazel, but we haven't done it yet.
-
-1. Experiment with other loss models.
-
-   We might get images with crisper edges if our model uses a different loss
-   function.
-
-1. Experiment with generating smaller images.
-
-   If running generator.py proves slow, we should generate smaller images.
