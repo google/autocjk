@@ -30,6 +30,7 @@ py_library(
     srcs_version = "PY3",
     deps = [
         requirement("PyICU"),
+        requirement("networkx"),
         ":region",
         ":shape",
         "//third_party:babelstone",
@@ -45,7 +46,6 @@ py_test(
     deps = [
         requirement("decorator"),
         requirement("more_itertools"),
-        requirement("networkx"),
         ":decomposer",
         ":ideographic_description_sequence",
         ":region",
