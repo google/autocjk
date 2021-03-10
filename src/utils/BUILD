@@ -30,6 +30,7 @@ py_library(
     srcs_version = "PY3",
     deps = [
         requirement("PyICU"),
+        requirement("decorator"),
         requirement("networkx"),
         ":region",
         ":shape",
@@ -44,7 +45,6 @@ py_test(
     ],
     srcs_version = "PY3",
     deps = [
-        requirement("decorator"),
         requirement("more_itertools"),
         ":decomposer",
         ":ideographic_description_sequence",
