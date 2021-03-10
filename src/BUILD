@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@pip_deps//:requirements.bzl", "requirement")
 
 package(
@@ -90,6 +90,19 @@ py_binary(
         requirement("imagehash"),
         requirement("image"),
     ],
+)
+
+py_test(
+    name = "make_dataset_test",
+    srcs = ["make_dataset_test.py"],
+    srcs_version = "PY3",
+    data = [
+        "//src/testutils:fonts",
+        "//src/testutils:expected_training_data",
+        # Include the binary as data.
+        ":make_dataset",
+    ],
+    deps = []
 )
 
 py_binary(
