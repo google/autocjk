@@ -39,14 +39,14 @@ class TestMain(googletest.TestCase):
             'src/main', '--font_path',
             os.path.abspath(_PATH_TO_FONT), '--lhs=来'
         ],
-                                regexes=[".*Must provide a --rhs.*"])
+            regexes=[".*Must provide a --rhs.*"])
 
     def test_no_lhs(self):
         self.assertCommandFails(command=[
             'src/main', '--font_path',
             os.path.abspath(_PATH_TO_FONT), '--rhs=来'
         ],
-                                regexes=[".*Must provide a --lhs.*"])
+            regexes=[".*Must provide a --lhs.*"])
 
     def test_successful_run(self):
         with tempfile.NamedTemporaryFile(mode='w+', suffix=".png") as tmp_file:
