@@ -23,9 +23,19 @@ import tempfile
 # Run make_dataset.py on Serif SC Regular, generate one image, and compare it
 # to a golden file.
 class TestMakeDataset(googletest.TestCase):
+    def test_no_dest(self):
+        self.assertCommandFails(command=['src/make_dataset'],
+                                regexes=[".*Must specify --dest.*"])
+
+    def test_no_fonts(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            self.assertCommandFails(
+                command=['src/make_dataset', '--dst', tmp_dir],
+                regexes=[".*Must specify --fonts.*"])
+
     def test_make_dataset(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            subprocess.run([
+            self.assertCommandSucceeds(command=[
                 "src/make_dataset", "--dst", tmp_dir, "--fonts",
                 "src/testutils/NotoSerifCJKsc-Regular.otf", "--limit=1",
                 "--num_workers=1"

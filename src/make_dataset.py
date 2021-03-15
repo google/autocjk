@@ -31,7 +31,7 @@ from src.utils import decomposer as decomposer_lib
 from src.utils import ideographic_description_sequence
 from src.utils import region as region_lib
 
-_FONT_PATHS = flags.DEFINE_list("fonts", [], "List of font files.")
+_FONT_PATHS = flags.DEFINE_list("fonts", None, "List of font files.")
 _DEST = flags.DEFINE_string(
     "dst", None, "Path to a directory into which to write. Required.")
 _LIMIT = flags.DEFINE_integer(
@@ -118,7 +118,7 @@ def main(argv: Sequence[str]) -> None:
         raise app.UsageError("Too many command-line arguments.")
     if _DEST.value is None:
         raise app.UsageError("Must specify --dest.")
-    if _FONT_PATHS.value is []:
+    if _FONT_PATHS.value is None:
         raise app.UsageError("Must specify --fonts.")
 
     make_dataset()

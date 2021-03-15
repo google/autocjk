@@ -30,11 +30,29 @@ _EXPECTED_VARIANCE = 8
 # Run main.py on Serif SC Regular, predict one character, and compare it
 # to a golden file.
 class TestMain(googletest.TestCase):
-    def test_main(self):
+    def test_no_font_path(self):
+        self.assertCommandFails(command=['src/main', '--lhs=市', '--rhs=來'],
+                                regexes=[".*Must provide a --font_path.*"])
+
+    def test_no_rhs(self):
+        self.assertCommandFails(command=[
+            'src/main', '--font_path',
+            os.path.abspath(_PATH_TO_FONT), '--lhs=来'
+        ],
+                                regexes=[".*Must provide a --rhs.*"])
+
+    def test_no_lhs(self):
+        self.assertCommandFails(command=[
+            'src/main', '--font_path',
+            os.path.abspath(_PATH_TO_FONT), '--rhs=来'
+        ],
+                                regexes=[".*Must provide a --lhs.*"])
+
+    def test_successful_run(self):
         with tempfile.NamedTemporaryFile(mode='w+', suffix=".png") as tmp_file:
-            subprocess.check_output([
-                "src/main", "--font_path",
-                os.path.abspath(_PATH_TO_FONT), "--lhs=市", "--rhs=來", "--out",
+            self.assertCommandSucceeds(command=[
+                'src/main', '--font_path',
+                os.path.abspath(_PATH_TO_FONT), '--lhs=市', '--rhs=來', '--out',
                 tmp_file.name
             ])
             im_actual = Image.open(tmp_file.name)
