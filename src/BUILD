@@ -87,6 +87,7 @@ py_binary(
         "//src/utils:font_helper",
         "//src/utils:ideographic_description_sequence",
         "//src/utils:region",
+        requirement("absl-py"),
         requirement("imagehash"),
         requirement("image"),
     ],
