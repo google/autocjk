@@ -118,3 +118,18 @@ py_binary(
         requirement("absl-py"),
     ],
 )
+
+py_test(
+    name = "main_test",
+    srcs = ["main_test.py"],
+    data = [
+        "//src/testutils:fonts",
+        "//src/testutils:expected_predictions",
+        # Include the binary as data.
+        ":main",
+    ],
+    srcs_version = "PY3",
+    deps = [
+        requirement("imagehash"),
+    ],
+)
