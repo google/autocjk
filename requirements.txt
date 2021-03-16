@@ -1,3 +1,4 @@
+Pillow
 PyICU
 absl-py
 backcall

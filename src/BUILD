@@ -18,6 +18,7 @@ py_library(
     ],
     srcs_version = "PY3",
     deps = [
+        requirement("Pillow"),
         requirement("image"),
         requirement("imagehash"),
         requirement("numpy"),
@@ -53,6 +54,7 @@ py_binary(
         "//src/utils:decomposer",
         "//src/utils:font_helper",
         "//src/utils:ideographic_description_sequence",
+        requirement("Pillow"),
         requirement("imagehash"),
         requirement("image"),
     ],
@@ -104,6 +106,7 @@ py_test(
     ],
     srcs_version = "PY3",
     deps = [
+        requirement("Pillow"),
         requirement("imagehash"),
     ],
 )
@@ -131,6 +134,7 @@ py_test(
     ],
     srcs_version = "PY3",
     deps = [
+        requirement("Pillow"),
         requirement("imagehash"),
     ],
 )
