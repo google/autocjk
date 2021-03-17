@@ -18,6 +18,7 @@ py_library(
     ],
     srcs_version = "PY3",
     deps = [
+        requirement("absl-py"),
         requirement("image"),
         requirement("imagehash"),
         requirement("numpy"),

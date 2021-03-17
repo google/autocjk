@@ -11,19 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Image utilities for /gan."""
+"""Image-handling utilities."""
 
-import subprocess
-import tempfile
-from typing import List, Text
-
-import imagehash
 from PIL import Image
 from PIL import ImageChops
 from PIL import ImageOps
+from absl import flags
+from typing import List, Text
+import imagehash
+import subprocess
+import tempfile
 import tensorflow as tf
 
-_HB_VIEW_PATH = "/usr/bin/hb-view"
+_HB_VIEW_PATH = flags.DEFINE_string(
+    "hb_view_path", "/usr/bin/hb-view", "Path to harfbuzz's hb-view util.")
 
 
 def write_character(font_path: Text, character: Text, out_path: Text):
@@ -40,7 +41,7 @@ def write_character(font_path: Text, character: Text, out_path: Text):
     subprocess.run(
         [
             # Path to the harfbuzz util.
-            _HB_VIEW_PATH,
+            _HB_VIEW_PATH.value,
             #
             # Path to the font.
             font_path,
