@@ -37,15 +37,3 @@ It might even be pretty good at generating characters in a new style. If you
 discover it's not, you can (a) generate a new batch of training images in your
 own font style, and (b) run `model.py` in order to train a new model. If you
 save that model as `src/generator.h5`, you can continue to use `bazel run //src:main` as expected.
-
-## Development:
-
-1. Run tests, autoformatting, etc. before submitting.
-
-   ```bash
-   bazel test ...
-   # pip install yapf
-   yapf -i src/**.py
-   # pip install mdformat
-   find . -iname 'README.md' | xargs mdformat
-   ```
