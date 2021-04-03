@@ -31,6 +31,7 @@ py_library(
     deps = [
         requirement("PyICU"),
         requirement("absl-py"),
+        requirement("networkx"),
         ":region",
         ":shape",
         "//third_party:babelstone",

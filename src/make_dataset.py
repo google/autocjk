@@ -118,7 +118,7 @@ def main(argv: Sequence[str]) -> None:
         raise app.UsageError("Too many command-line arguments.")
     if _DEST.value is None:
         raise app.UsageError("Must specify --dest.")
-    if _FONT_PATHS.value is []:
+    if not _FONT_PATHS.value:
         raise app.UsageError("Must specify --fonts.")
 
     make_dataset()

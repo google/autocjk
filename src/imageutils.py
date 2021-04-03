@@ -67,6 +67,7 @@ def write_character(font_path: Text, character: Text, out_path: Text):
 
 
 def horizontal_stitch(file_paths: List[Text], out_path: Text):
+    # On MacOS, run `brew install imagemagick`.
     # convert image1.png image2.png image3.png +append /tmp/123.png
     subprocess.run(["convert"] + file_paths + ["+append", out_path],
                    check=True)
