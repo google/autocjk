@@ -19,3 +19,10 @@ filegroup(
         "predicted-175276.png",
     ],
 ) 
+
+filegroup(
+    name = "expected_training_data",
+    srcs = [
+        "0-0013334.png",
+    ],
+)

@@ -30,4 +30,8 @@ jobs:
       run: bazel build ...
       
     - name: Bazel test
+      run: bazel test ...
+
+    - name: Bazel test (in series, with logs)
+      if: ${{ failure() }}
       run: bazel test ... --test_output=streamed
