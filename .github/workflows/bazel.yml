@@ -20,16 +20,11 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.7'
+        python-version: '3.8'
         architecture: 'x64' 
       
-    - name: Install non-Bazel Python dependencies
-      run: |
-        uname -m
-        python3 --version
-        pip3 install --upgrade pip
-        pip3 --version
-        pip3 install "tensorflow>=2.3.0"
+    - name: Install harfbuzz
+      run: sudo apt-get install libharfbuzz-bin
       
     - name: Bazel build
       run: bazel build ...

@@ -24,7 +24,9 @@ import tempfile
 import tensorflow as tf
 
 _HB_VIEW_PATH = flags.DEFINE_string(
-    "hb_view_path", "/usr/bin/hb-view", "Path to harfbuzz's hb-view util.")
+    "hb_view_path",
+    "hb-view",
+    "Path to harfbuzz's hb-view util. Assume this is on the PATH by default.")
 
 
 def write_character(font_path: Text, character: Text, out_path: Text):

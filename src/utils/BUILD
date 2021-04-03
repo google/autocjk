@@ -30,6 +30,7 @@ py_library(
     srcs_version = "PY3",
     deps = [
         requirement("PyICU"),
+        requirement("absl-py"),
         ":region",
         ":shape",
         "//third_party:babelstone",
@@ -48,6 +49,7 @@ py_test(
         requirement("networkx"),
         ":decomposer",
         ":ideographic_description_sequence",
+        requirement("tensorflow"),
         ":region",
     ],
 )
@@ -58,7 +60,10 @@ py_library(
         "ideographic_description_sequence.py",
     ],
     srcs_version = "PY3",
-    deps = [":region"],
+    deps = [
+        ":region",
+        requirement("absl-py"),
+    ]
 )
 
 py_test(
@@ -69,6 +74,7 @@ py_test(
     deps = [
         ":ideographic_description_sequence",
         ":region",
+        requirement("tensorflow"),
     ],
 )
 
