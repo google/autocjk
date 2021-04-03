@@ -19,9 +19,10 @@ py_library(
     srcs_version = "PY3",
     deps = [
         requirement("absl-py"),
-        requirement("image"),
+        requirement("Pillow"),
         requirement("imagehash"),
         requirement("numpy"),
+        requirement("tensorflow"),
     ],
 )
 
@@ -38,7 +39,6 @@ py_binary(
         "//src/utils:font_helper",
         "//src/utils:ideographic_description_sequence",
         requirement("imagehash"),
-        requirement("image"),
     ],
 )
 
@@ -55,7 +55,6 @@ py_binary(
         "//src/utils:font_helper",
         "//src/utils:ideographic_description_sequence",
         requirement("imagehash"),
-        requirement("image"),
     ],
 )
 
@@ -89,7 +88,6 @@ py_binary(
         "//src/utils:ideographic_description_sequence",
         "//src/utils:region",
         requirement("imagehash"),
-        requirement("image"),
     ],
 )
 
@@ -102,5 +100,33 @@ py_binary(
         ":imageutils",
         "//models:generator_lib",
         requirement("absl-py"),
+        requirement("Pillow"),
+    ],
+)
+
+py_test(
+    name = "main_test",
+    srcs = ["main_test.py"],
+    data = [
+        "//src/testutils:fonts",
+        "//src/testutils:expected_predictions",
+        # Include the binary as data.
+        ":main",
+    ],
+    srcs_version = "PY3",
+    deps = [
+        requirement("Pillow"),
+        requirement("tensorflow"),
+        requirement("imagehash"),
+    ],
+)
+
+py_test(
+    name = "pillow_test",
+    srcs = ["pillow_test.py"],
+    srcs_version = "PY3",
+    deps = [
+        requirement("tensorflow"),
+        requirement("Pillow"),
     ],
 )

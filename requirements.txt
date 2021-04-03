@@ -1,9 +1,9 @@
+Pillow==8.2.0
 PyICU
 absl-py
 backcall
 decorator
 fonttools
-image
 imagehash
 ipython
 ipython_genutils
@@ -12,6 +12,7 @@ networkx
 numpy
 pickleshare
 prompt_toolkit
-protobuf==3.12.4
+protobuf 
+tensorflow >= 2.3.0
 traitlets
 wcwidth
