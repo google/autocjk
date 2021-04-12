@@ -20,7 +20,8 @@ import subprocess
 import tempfile
 
 _PATH_TO_FONT = "src/testutils/NotoSerifCJKsc-Regular.otf"
-_PATH_TO_EXPECTED = "src/testutils/predicted-175276.png"
+_PATH_TO_EXPECTED_2CF56 = "src/testutils/predicted-2CF56.png"
+_PATH_TO_EXPECTED_653E = "src/testutils/predicted-653E.png"
 
 # There's a bit of variance between runs. A value of |8| below
 # passes with --runs_per_test=1000 --runs_per_test_detects_flakes.
@@ -30,7 +31,7 @@ _EXPECTED_VARIANCE = 8
 # Run main.py on Serif SC Regular, predict one character, and compare it
 # to a golden file.
 class TestMain(googletest.TestCase):
-    def test_successful_run(self):
+    def test_successful_run_lhs_and_rhs(self):
         with tempfile.NamedTemporaryFile(mode='w+', suffix=".png") as tmp_file:
             self.assertCommandSucceeds(command=[
                 'src/main', '--font_path', os.path.abspath(_PATH_TO_FONT),
@@ -38,7 +39,23 @@ class TestMain(googletest.TestCase):
             ], env={'PATH': os.environ['PATH'], })
 
             image_actual = Image.open(tmp_file.name)
-            image_expected = Image.open(_PATH_TO_EXPECTED)
+            image_expected = Image.open(_PATH_TO_EXPECTED_2CF56)
+
+            hash_actual = imagehash.average_hash(image_actual)
+            hash_expected = imagehash.average_hash(image_expected)
+
+            self.assertLessEqual(
+                hash_actual - hash_expected, _EXPECTED_VARIANCE)
+
+    def test_successful_run_chr(self):
+        with tempfile.NamedTemporaryFile(mode='w+', suffix=".png") as tmp_file:
+            self.assertCommandSucceeds(command=[
+                'src/main', '--font_path', os.path.abspath(_PATH_TO_FONT),
+                '--chr=放', '--out', tmp_file.name,
+            ], env={'PATH': os.environ['PATH'], })
+
+            image_actual = Image.open(tmp_file.name)
+            image_expected = Image.open(_PATH_TO_EXPECTED_653E)
 
             hash_actual = imagehash.average_hash(image_actual)
             hash_expected = imagehash.average_hash(image_expected)
@@ -67,7 +84,7 @@ class TestMain(googletest.TestCase):
             env={
                 'PATH': os.environ['PATH'],
             },
-            regexes=[".*Must provide a --rhs.*"])
+            regexes=[".*Either --chr must be set, or both --lhs and --rhs must be set..*"])
 
     def test_no_lhs(self):
         self.assertCommandFails(
@@ -79,7 +96,19 @@ class TestMain(googletest.TestCase):
             env={
                 'PATH': os.environ['PATH'],
             },
-            regexes=[".*Must provide a --lhs.*"])
+            regexes=[".*Either --chr must be set, or both --lhs and --rhs must be set..*"])
+
+    def test_invalid_chr(self):
+        self.assertCommandFails(
+            command=[
+                'src/main',
+                '--font_path',
+                os.path.abspath(_PATH_TO_FONT),
+                '--chr=来'],
+            env={
+                'PATH': os.environ['PATH'],
+            },
+            regexes=[".*If providing --chr, must provide a character which decomposes to.*"])
 
 
 if __name__ == "__main__":

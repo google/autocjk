@@ -16,7 +16,8 @@ filegroup(
 filegroup(
     name = "expected_predictions",
     srcs = [
-        "predicted-175276.png",
+        "predicted-2CF56.png",
+        "predicted-653E.png",
     ],
 ) 
 
