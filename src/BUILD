@@ -116,6 +116,9 @@ py_binary(
     deps = [
         ":imageutils",
         "//models:generator_lib",
+        "//src/utils:decomposer",
+        "//src/utils:ideographic_description_sequence",
+        "//src/utils:region",
         requirement("absl-py"),
         requirement("Pillow"),
     ],
