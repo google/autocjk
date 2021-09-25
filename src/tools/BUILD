@@ -13,14 +13,19 @@ py_binary(
     ],
 )
 
-py_test(name="make_dataset_test",
-        srcs=["make_dataset_test.py"],
-        srcs_version="PY3",
-        data=[
-            "//src/testutils:fonts", 
-            "//src/testutils:expected_training_data",
-            ":make_dataset"
-        ])
+py_test(
+    name="make_dataset_test",
+    srcs=["make_dataset_test.py"],
+    srcs_version="PY3",
+    data=[
+        "//src/testutils:fonts", 
+        "//src/testutils:expected_training_data",
+        ":make_dataset"
+    ],
+    deps=[
+        requirement("tensorflow"),
+    ],
+)
 
 py_library(
     name="make_dataset_lib",
