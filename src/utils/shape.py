@@ -261,3 +261,19 @@ def get_subshapes_of_verb(verb: Text) -> List[Shape]:
     if not is_verb(verb):
         raise ValueError(f"Input {verb.encode('UTF-8')} is not a verb.")
     return _SHAPES_BY_VERB[verb]
+
+
+def num_subshapes_of_verb(verb: Text) -> int:
+    """Given a verb, returns the number of subshapes.
+
+    Args:
+      verb: the input character.
+
+    Returns:
+      The number of subshapes of that verb
+
+    Raises:
+      ValueError: if the input verb is not a verb.
+      KeyError: if the verb does not have a mapping in _SHAPES_BY_VERB.
+    """
+    return len(get_subshapes_of_verb(verb))
