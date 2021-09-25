@@ -1,7 +1,8 @@
-Pillow==8.2.0
+Pillow
 PyICU
 absl-py
 backcall
+cython
 decorator
 fonttools
 imagehash
@@ -13,6 +14,7 @@ numpy
 pickleshare
 prompt_toolkit
 protobuf 
-tensorflow >= 2.3.0
+scipy
+tensorflow 
 traitlets
 wcwidth
