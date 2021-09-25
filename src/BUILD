@@ -76,39 +76,6 @@ py_library(
 )
 
 py_binary(
-    name = "make_dataset",
-    srcs = [
-        "make_dataset.py",
-    ],
-    srcs_version = "PY3",
-    deps = [
-        ":imageutils",
-        "//src/utils:decomposer",
-        "//src/utils:font_helper",
-        "//src/utils:ideographic_description_sequence",
-        "//src/utils:region",
-        requirement("imagehash"),
-    ],
-)
-
-py_test(
-    name = "make_dataset_test",
-    srcs = ["make_dataset_test.py"],
-    srcs_version = "PY3",
-    data = [
-        "//src/testutils:fonts",
-        "//src/testutils:expected_training_data",
-        # Include the binary as data.
-        ":make_dataset",
-    ],
-    deps = [
-        requirement("Pillow"),
-        requirement("imagehash"),
-        requirement("tensorflow"),
-    ]
-)
-
-py_binary(
     name = "main",
     srcs = [
         "main.py",

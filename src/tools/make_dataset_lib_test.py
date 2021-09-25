@@ -13,38 +13,40 @@
 # limitations under the License.
 
 from PIL import Image
-from PIL import ImageChops
 from tensorflow.python.platform import googletest
 import imagehash
 import os
-import subprocess
 import tempfile
 
+from src.tools import make_dataset_lib
 
-# Run make_dataset.py on Serif SC Regular, generate one image, and compare it
-# to a golden file.
+_FONT_PATHS = ["src/testutils/NotoSerifCJKsc-Regular.otf"]
+
+
 class TestMakeDataset(googletest.TestCase):
-    def test_no_dest(self):
-        self.assertCommandFails(command=['src/make_dataset'],
-                                env={'PATH': os.environ['PATH'], },
-                                regexes=[".*Must specify --dest.*"])
-
-    def test_no_fonts(self):
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            self.assertCommandFails(
-                command=['src/make_dataset', '--dst', tmp_dir],
-                env={'PATH': os.environ['PATH'], },
-                regexes=[".*Must specify --fonts.*"])
-
     def test_make_dataset(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            self.assertCommandSucceeds(command=[
-                "src/make_dataset", "--dst", tmp_dir, "--fonts",
-                "src/testutils/NotoSerifCJKsc-Regular.otf", "--limit=1",
-                "--num_workers=1",
-            ], env={'PATH': os.environ['PATH'], })
+            make_dataset_lib.make_dataset(dest=tmp_dir,
+                                          font_paths=_FONT_PATHS,
+                                          split_style=1,
+                                          num_workers=1,
+                                          limit=1)
             im_actual = Image.open(os.path.join(tmp_dir, "0-0013334.png"))
             im_expected = Image.open("src/testutils/0-0013334.png")
+            self.assertEqual(
+                0,
+                imagehash.average_hash(im_actual) -
+                imagehash.average_hash(im_expected))
+
+    def test_make_dataset_2(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            make_dataset_lib.make_dataset(dest=tmp_dir,
+                                          font_paths=_FONT_PATHS,
+                                          split_style=2,
+                                          num_workers=1,
+                                          limit=1)
+            im_actual = Image.open(os.path.join(tmp_dir, "0-0013312.png"))
+            im_expected = Image.open("src/testutils/0-0013312.png")
             self.assertEqual(
                 0,
                 imagehash.average_hash(im_actual) -
