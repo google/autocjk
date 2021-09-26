@@ -23,9 +23,9 @@ _PATH_TO_FONT = "src/testutils/NotoSerifCJKsc-Regular.otf"
 _PATH_TO_EXPECTED_2CF56 = "src/testutils/predicted-2CF56.png"
 _PATH_TO_EXPECTED_653E = "src/testutils/predicted-653E.png"
 
-# There's a bit of variance between runs. A value of |8| below
+# There's a bit of variance between runs. The value below
 # passes with --runs_per_test=1000 --runs_per_test_detects_flakes.
-_EXPECTED_VARIANCE = 8
+_EXPECTED_VARIANCE = 10
 
 
 # Run main.py on Serif SC Regular, predict one character, and compare it
