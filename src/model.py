@@ -315,8 +315,7 @@ def train_step(
         discriminator: tf.keras.Model,
         discriminator_optimizer: tf.keras.optimizers.Optimizer,
         loss_object: tf.keras.losses.Loss,
-        inp_a: tf.Tensor,
-        inp_b: tf.Tensor,
+        inputs: List[tf.Tensor],
         target: tf.Tensor,
         epoch: int,
         summary_writer: Optional[tf.summary.SummaryWriter] = None) -> None:
@@ -330,14 +329,13 @@ def train_step(
     discriminator: A discriminator model,
     discriminator_optimizer: and an optimizer for the generator.
     loss_object: A reusable BinaryCrossentropy object.
-    inp_a: A full-width image of the left-most component.
-    inp_b: A full-width image of the right-most component.
+    inputs: A list of full-width images of components.
     target: The human-authored image of the a+b character.
     epoch: The index of the epoch we're in.
     summary_writer: A SummaryWriter object for writing.... summaries.
   """
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-        inp_x = tf.concat([inp_a, inp_b], 3)
+        inp_x = tf.concat(inputs, axis=3)
         gen_output = generator(inp_x, training=True)
 
         disc_real_output = discriminator([inp_x, target], training=True)
@@ -408,7 +406,7 @@ def fit(generator: tf.keras.Model,
             if (n + 1) % 100 == 0:
                 print()
             train_step(generator, generator_optimizer, discriminator,
-                       discriminator_optimizer, loss_object, inp_a, inp_b,
+                       discriminator_optimizer, loss_object, [inp_a, inp_b],
                        target, epoch, summary_writer)
         print()
 
