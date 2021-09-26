@@ -24,6 +24,7 @@ python build rule.
 """
 
 import time
+from absl import logging
 from typing import List, Text, Tuple, Optional
 
 from IPython import display
@@ -33,11 +34,12 @@ import tensorflow as tf
 _LAMBDA = 100
 
 
-def _load_image(filename: Text) -> List[List[tf.Tensor]]:
+def _load_image(filename: Text, num_cells: int) -> List[List[tf.Tensor]]:
     """Given the filename of a PNG, returns a list of three tensors: a, b, a+b.
 
   Args:
     filename: Path to a file. The file must be a PNG and greyscale and 256x256.
+    num_cells: the number of square 256x256 cells to expect per input image.
 
   Returns:
     A list of tensors: a, b, and a+b.
@@ -45,33 +47,30 @@ def _load_image(filename: Text) -> List[List[tf.Tensor]]:
   """
     image = tf.io.read_file(filename)
     image = tf.image.decode_png(image, channels=1)  # greyscale
-
-    # Our images have a width which is divisible by three.
-    w = tf.shape(image)[1] // 3
-
-    imgs = [
-        tf.cast(image[:, n * w:(n + 1) * w, :], tf.float32) for n in range(3)
+    image = tf.cast(image, tf.float32)
+    print(num_cells)
+    print(image.shape)
+    return [
+        tf.image.crop_to_bounding_box(image, 0, i * 256, 256, 256)
+        for i in range(num_cells)
     ]
 
-    imgs[0] = tf.image.resize_with_crop_or_pad(imgs[0], 256, 256)
-    imgs[1] = tf.image.resize_with_crop_or_pad(imgs[1], 256, 256)
-    imgs[2] = tf.image.resize_with_crop_or_pad(imgs[2], 256, 256)
 
-    return imgs
-
-
-def make_datasets(files_glob: Text) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
+def make_datasets(files_glob: Text,
+                  num_cells: int) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
     """Makes the train/test datasets.
 
   Args:
     files_glob: A glob (like "/tmp/folder/*.png") of all the input images.
+    num_cells: the number of square 256x256 cells to expect per input image.
 
   Returns:
     A pair of train, test datasets of type tf.data.Dataset.
 
   """
     ds = tf.data.Dataset.list_files(files_glob).map(
-        _load_image, num_parallel_calls=tf.data.AUTOTUNE).shuffle(400).batch(1)
+        lambda i: _load_image(i, num_cells),
+        num_parallel_calls=tf.data.AUTOTUNE).shuffle(400).batch(1)
 
     train_dataset_a = ds.shard(num_shards=3, index=0)
     train_dataset_b = ds.shard(num_shards=3, index=1)

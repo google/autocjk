@@ -81,12 +81,12 @@ py_test(
     srcs_version = "PY3",
     data = [
         "//src/testutils/corpus:split-1",
-        "//src/testutils/training_data:training_data_wrong_size",
+        "//src/testutils/corpus:split-3",
         "//src/testutils:fonts",
     ],
     deps = [
         ":model",
-        ":imageutils",
+        "imageutils",
         requirement("tensorflow"),
         requirement("Pillow"),
         requirement("matplotlib"),
