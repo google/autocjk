@@ -64,6 +64,18 @@ def write_character(font_path: Text, character: Text, out_path: Text):
             character,
         ],
         check=True)
+    # Resize the output image to 256x256.
+    subprocess.run([
+        "mogrify",
+        "-resize",
+        "256x256",
+        "-gravity",
+        "center",
+        "-extent",
+        "256x256",
+        out_path,
+    ],
+                   check=True)
 
 
 def horizontal_stitch(file_paths: List[Text], out_path: Text):
