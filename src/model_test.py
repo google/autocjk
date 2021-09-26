@@ -80,8 +80,10 @@ class TrainTestClass(googletest.TestCase):
 
         # We want to see that model_lib.generate_images(generator, ...) doesn't
         # fail.
-        for a, b, ab in test_dataset.take(1):
-            model_lib.generate_images(generator, [a, b], ab)
+        for items in test_dataset.take(1):
+            inputs = items[:-1]
+            target = items[-1]
+            model_lib.generate_images(generator, inputs, target)
 
 
 if __name__ == "__main__":

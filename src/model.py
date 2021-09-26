@@ -397,17 +397,21 @@ def fit(generator: tf.keras.Model,
 
         display.clear_output(wait=True)
 
-        for a, b, ab in test_ds.take(1):
-            generate_images(generator, inputs=[a, b], target=ab)
+        for items in test_ds.take(1):
+            inputs = items[:-1]
+            target = items[-1]
+            generate_images(generator, inputs, target)
         print('Epoch: ', epoch)
 
-        for n, (inp_a, inp_b, target) in train_ds.enumerate():
+        for n, items in train_ds.enumerate():
+            inputs = items[:-1]
+            target = items[-1]
             print('.', end='')
             if (n + 1) % 100 == 0:
                 print()
             train_step(generator, generator_optimizer, discriminator,
-                       discriminator_optimizer, loss_object, [inp_a, inp_b],
-                       target, epoch, summary_writer)
+                       discriminator_optimizer, loss_object, inputs, target,
+                       epoch, summary_writer)
         print()
 
         if checkpoint and checkpoint_prefix:
