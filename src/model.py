@@ -24,7 +24,7 @@ python build rule.
 """
 
 import time
-from typing import List, Text, Tuple
+from typing import List, Text, Tuple, Optional
 
 from IPython import display
 import matplotlib.pyplot as plt
@@ -312,13 +312,17 @@ def generate_images(model: tf.keras.Model, input_a: tf.Tensor,
 
 
 @tf.function
-def train_step(generator: tf.keras.Model,
-               generator_optimizer: tf.keras.optimizers.Optimizer,
-               discriminator: tf.keras.Model,
-               discriminator_optimizer: tf.keras.optimizers.Optimizer,
-               loss_object: tf.keras.losses.Loss, inp_a: tf.Tensor,
-               inp_b: tf.Tensor, target: tf.Tensor, epoch: int,
-               summary_writer: tf.summary.SummaryWriter) -> None:
+def train_step(
+        generator: tf.keras.Model,
+        generator_optimizer: tf.keras.optimizers.Optimizer,
+        discriminator: tf.keras.Model,
+        discriminator_optimizer: tf.keras.optimizers.Optimizer,
+        loss_object: tf.keras.losses.Loss,
+        inp_a: tf.Tensor,
+        inp_b: tf.Tensor,
+        target: tf.Tensor,
+        epoch: int,
+        summary_writer: Optional[tf.summary.SummaryWriter] = None) -> None:
     """Trains the models for one (1) epoch.
 
   See https://www.tensorflow.org/tutorials/generative/pix2pix#training.
@@ -359,21 +363,25 @@ def train_step(generator: tf.keras.Model,
     discriminator_optimizer.apply_gradients(
         zip(discriminator_gradients, discriminator.trainable_variables))
 
-    with summary_writer.as_default():
-        tf.summary.scalar('gen_total_loss', gen_total_loss, step=epoch)
-        tf.summary.scalar('gen_gan_loss', gen_gan_loss, step=epoch)
-        tf.summary.scalar('gen_l1_loss', gen_l1_loss, step=epoch)
-        tf.summary.scalar('disc_loss', disc_loss, step=epoch)
+    if summary_writer:
+        with summary_writer.as_default():
+            tf.summary.scalar('gen_total_loss', gen_total_loss, step=epoch)
+            tf.summary.scalar('gen_gan_loss', gen_gan_loss, step=epoch)
+            tf.summary.scalar('gen_l1_loss', gen_l1_loss, step=epoch)
+            tf.summary.scalar('disc_loss', disc_loss, step=epoch)
 
 
 def fit(generator: tf.keras.Model,
         generator_optimizer: tf.keras.optimizers.Optimizer,
         discriminator: tf.keras.Model,
         discriminator_optimizer: tf.keras.optimizers.Optimizer,
-        loss_object: tf.keras.losses.Loss, train_ds: tf.data.Dataset,
-        epochs: int, test_ds: tf.data.Dataset, checkpoint: tf.train.Checkpoint,
-        checkpoint_prefix: Text,
-        summary_writer: tf.summary.SummaryWriter) -> None:
+        loss_object: tf.keras.losses.Loss,
+        train_ds: tf.data.Dataset,
+        epochs: int,
+        test_ds: tf.data.Dataset,
+        checkpoint: Optional[tf.train.Checkpoint] = None,
+        checkpoint_prefix: Optional[Text] = None,
+        summary_writer: tf.summary.SummaryWriter = None) -> None:
     """Runs for |epochs| and trains the models.
 
   Args:
@@ -407,9 +415,12 @@ def fit(generator: tf.keras.Model,
                        target, epoch, summary_writer)
         print()
 
-        checkpoint.save(file_prefix=checkpoint_prefix)
+        if checkpoint and checkpoint_prefix:
+            checkpoint.save(file_prefix=checkpoint_prefix)
 
         print('Time taken for epoch {} is {} sec\n'.format(
             epoch + 1,
             time.time() - start))
-    checkpoint.save(file_prefix=checkpoint_prefix)
+
+    if checkpoint and checkpoint_prefix:
+        checkpoint.save(file_prefix=checkpoint_prefix)
