@@ -75,7 +75,7 @@ def write_character(font_path: Text, character: Text, out_path: Text):
         "256x256",
         out_path,
     ],
-                   check=True)
+        check=True)
 
 
 def horizontal_stitch(file_paths: List[Text], out_path: Text):

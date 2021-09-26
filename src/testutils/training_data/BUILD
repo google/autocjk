@@ -9,14 +9,6 @@ exports_files([
 ])
 
 filegroup(
-    name = "training_data",
-    srcs = [
-        "0-0013334.png",
-        "0-0013312.png",
-    ],
-)
-
-filegroup(
     name = "training_data_wrong_size",
     srcs = [
         # 768x250, not 768x256.

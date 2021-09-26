@@ -9,8 +9,16 @@ exports_files([
 ])
 
 filegroup(
-    name = "corpus_data_split_0",
-    srcs = glob([
-        "0-*.png"
-    ]),
+    name = "split-1",
+    srcs = glob(["split-1/0-*.png"]),
+)
+
+filegroup(
+    name = "split-2",
+    srcs = glob(["split-2/0-*.png"]),
+)
+
+filegroup(
+    name = "split-3",
+    srcs = glob(["split-3/0-*.png"]),
 )

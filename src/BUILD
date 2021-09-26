@@ -80,8 +80,7 @@ py_test(
     srcs = ["model_test.py"],
     srcs_version = "PY3",
     data = [
-        "//src/testutils/corpus:corpus_data_split_0",
-        "//src/testutils/training_data",
+        "//src/testutils/corpus:split-1",
         "//src/testutils/training_data:training_data_wrong_size",
         "//src/testutils:fonts",
     ],

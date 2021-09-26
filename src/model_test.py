@@ -21,7 +21,7 @@ from src import model as model_lib
 from src import imageutils
 
 _PATH_TO_FONT = "src/testutils/NotoSerifCJKsc-Regular.otf"
-_PATH_TO_TRAINING_IMAGE = "src/testutils/training_data/0-0013312.png"
+_PATH_TO_TRAINING_IMAGE = "src/testutils/corpus/split-1/0-0013334.png"
 _PATH_TO_TRAINING_IMAGE_WRONG_SIZE = "src/testutils/training_data/0-0013312-250.png"
 
 
@@ -53,7 +53,7 @@ class TestClass(googletest.TestCase):
 class TrainTestClass(googletest.TestCase):
     def test_train_one_epoch(self):
         train_dataset, test_dataset = model_lib.make_datasets(
-            'src/testutils/corpus/0-*.png')
+            'src/testutils/corpus/split-1/0-*.png')
 
         generator = model_lib.make_generator()
         discriminator = model_lib.make_discriminator()
