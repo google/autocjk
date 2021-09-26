@@ -75,6 +75,22 @@ py_library(
     ],
 )
 
+py_test(
+    name = "model_test",
+    srcs = ["model_test.py"],
+    srcs_version = "PY3",
+    data = [
+        "//src/testutils/training_data",
+        "//src/testutils/training_data:training_data_wrong_size",
+    ],
+    deps = [
+        ":model",
+        requirement("tensorflow"),
+        requirement("Pillow"),
+        requirement("matplotlib"),
+    ],
+)
+
 py_binary(
     name = "main",
     srcs = [
