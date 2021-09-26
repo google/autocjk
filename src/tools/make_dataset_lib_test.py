@@ -33,7 +33,7 @@ class TestMakeDataset(googletest.TestCase):
                                           limit=1)
             im_actual = Image.open(os.path.join(tmp_dir, "0-0013334.png"))
             im_expected = Image.open(
-                "src/testutils/training_data/0-0013334.png")
+                "src/testutils/corpus/split-1/0-0013334.png")
             self.assertEqual(
                 0,
                 imagehash.average_hash(im_actual) -
@@ -48,7 +48,7 @@ class TestMakeDataset(googletest.TestCase):
                                           limit=1)
             im_actual = Image.open(os.path.join(tmp_dir, "0-0013312.png"))
             im_expected = Image.open(
-                "src/testutils/training_data/0-0013312.png")
+                "src/testutils/corpus/split-2/0-0013312.png")
             self.assertEqual(
                 0,
                 imagehash.average_hash(im_actual) -

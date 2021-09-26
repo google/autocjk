@@ -19,7 +19,6 @@ py_test(
     srcs_version="PY3",
     data=[
         "//src/testutils:fonts", 
-        "//src/testutils/training_data",
         ":make_dataset"
     ],
     deps=[
@@ -52,7 +51,8 @@ py_test(name="make_dataset_lib_test",
         srcs_version="PY3",
         data=[
             "//src/testutils:fonts",
-            "//src/testutils/training_data",
+            "//src/testutils/corpus:split-1",
+            "//src/testutils/corpus:split-2",
         ],
         deps=[
             ":make_dataset_lib",
