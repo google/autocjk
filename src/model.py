@@ -49,9 +49,15 @@ def _load_image(filename: Text) -> List[List[tf.Tensor]]:
     # Our images have a width which is divisible by three.
     w = tf.shape(image)[1] // 3
 
-    return [
+    imgs = [
         tf.cast(image[:, n * w:(n + 1) * w, :], tf.float32) for n in range(3)
     ]
+
+    imgs[0] = tf.image.resize_with_crop_or_pad(imgs[0], 256, 256)
+    imgs[1] = tf.image.resize_with_crop_or_pad(imgs[1], 256, 256)
+    imgs[2] = tf.image.resize_with_crop_or_pad(imgs[2], 256, 256)
+
+    return imgs
 
 
 def make_datasets(files_glob: Text) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
