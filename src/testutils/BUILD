@@ -25,5 +25,6 @@ filegroup(
     name = "expected_training_data",
     srcs = [
         "0-0013334.png",
+        "0-0013312.png",
     ],
 )
