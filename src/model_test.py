@@ -78,6 +78,11 @@ class TrainTestClass(googletest.TestCase):
             imageutils.predict(generator, _PATH_TO_FONT, '市', '來',
                                tmp_file.name)
 
+        # We want to see that model_lib.generate_images(generator, ...) doesn't
+        # fail.
+        for a, b, ab in test_dataset.take(1):
+            model_lib.generate_images(generator, [a, b], ab)
+
 
 if __name__ == "__main__":
     googletest.main()

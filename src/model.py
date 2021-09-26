@@ -48,8 +48,6 @@ def _load_image(filename: Text, num_cells: int) -> List[List[tf.Tensor]]:
     image = tf.io.read_file(filename)
     image = tf.image.decode_png(image, channels=1)  # greyscale
     image = tf.cast(image, tf.float32)
-    print(num_cells)
-    print(image.shape)
     return [
         tf.image.crop_to_bounding_box(image, 0, i * 256, 256, 256)
         for i in range(num_cells)
@@ -283,25 +281,25 @@ def discriminator_loss(loss_object: tf.keras.losses.Loss, disc_real_output,
     return real_loss + generated_loss
 
 
-def generate_images(model: tf.keras.Model, input_a: tf.Tensor,
-                    input_b: tf.Tensor, target: tf.Tensor) -> None:
-    """In Colab, prints [a | b | real(a,b) | predicted(a,b)] to the display.
+def generate_images(model: tf.keras.Model, inputs: List[tf.Tensor],
+                    target: tf.Tensor) -> None:
+    """In Colab, prints [ inputs... | real(a,b) | predicted(a,b)] to the display.
 
   Args:
     model: The generator to use.
-    input_a: the LHS image.
-    input_b: the RHS image.
+    inputs: the input image(s)
     target: The real(a,b) composition.
   """
-    x = tf.concat([input_a, input_b], 3)
-    x = tf.reshape(x, [256, 256, 2])
+    x = tf.concat(inputs, axis=3)
+    x = tf.reshape(x, [256, 256, len(inputs)])
     prediction = model(x[tf.newaxis, ...], training=True)
 
-    images = [input_a[0], input_b[0], target[0], prediction[0]]
-    fig, axes = plt.subplots(1, 4)
-    titles = [
-        'Input Image A', 'Input Image B', 'Ground Truth', 'Predicted Image'
-    ]
+    images = [i[0] for i in inputs] + [target[0], prediction[0]]
+    # n inputs + ground truth + prediction
+    num_subplots = len(inputs) + 2
+    fig, axes = plt.subplots(1, num_subplots)
+    titles = [f"Input Image #{i}" for i in range(len(inputs))
+              ] + ['Ground Truth', 'Predicted Image']
 
     for image, axis, title in zip(images, axes, titles):
         axis.set_title(title)
@@ -402,7 +400,7 @@ def fit(generator: tf.keras.Model,
         display.clear_output(wait=True)
 
         for a, b, ab in test_ds.take(1):
-            generate_images(generator, a, b, ab)
+            generate_images(generator, inputs=[a, b], target=ab)
         print('Epoch: ', epoch)
 
         for n, (inp_a, inp_b, target) in train_ds.enumerate():
