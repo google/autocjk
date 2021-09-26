@@ -31,8 +31,6 @@ from IPython import display
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-_LAMBDA = 100
-
 
 def _load_image(filename: Text, num_cells: int) -> List[List[tf.Tensor]]:
     """Given the filename of a PNG, returns a list of three tensors: a, b, a+b.
@@ -139,7 +137,7 @@ def _upsample(filters: int,
     return result
 
 
-def make_generator() -> tf.keras.Model:
+def _make_generator() -> tf.keras.Model:
     """Creates a generator.
 
   99% of this is copied directly from
@@ -199,17 +197,7 @@ def make_generator() -> tf.keras.Model:
     return tf.keras.Model(inputs=inputs, outputs=x)
 
 
-def generator_loss(loss_object: tf.keras.losses.Loss, disc_generated_output,
-                   gen_output, target):
-    gan_loss = loss_object(tf.ones_like(disc_generated_output),
-                           disc_generated_output)
-    # mean absolute error
-    l1_loss = tf.reduce_mean(tf.abs(target - gen_output))
-    total_gen_loss = gan_loss + (_LAMBDA * l1_loss)
-    return total_gen_loss, gan_loss, l1_loss
-
-
-def make_discriminator() -> tf.keras.Model:
+def _make_discriminator() -> tf.keras.Model:
     """Returns a discriminator.
 
   This is 99% the same as
@@ -257,30 +245,6 @@ def make_discriminator() -> tf.keras.Model:
     return tf.keras.Model(inputs=[input_img, target_img], outputs=last)
 
 
-def discriminator_loss(loss_object: tf.keras.losses.Loss, disc_real_output,
-                       disc_generated_output) -> float:
-    """Returns discriminator loss.
-
-  100% the same as
-  https://www.tensorflow.org/tutorials/generative/pix2pix#build_the_discriminator.
-
-  Args:
-    loss_object: A reusable loss_object of type
-      tf.keras.losses.BinaryCrossentropy.
-    disc_real_output: A set of real images.
-    disc_generated_output: A set of generator images.
-
-  Returns:
-    The sum of some loss functions.
-  """
-    real_loss = loss_object(tf.ones_like(disc_real_output), disc_real_output)
-
-    generated_loss = loss_object(tf.zeros_like(disc_generated_output),
-                                 disc_generated_output)
-
-    return real_loss + generated_loss
-
-
 def generate_images(model: tf.keras.Model, inputs: List[tf.Tensor],
                     target: tf.Tensor) -> None:
     """In Colab, prints [ inputs... | real(a,b) | predicted(a,b)] to the display.
@@ -308,118 +272,142 @@ def generate_images(model: tf.keras.Model, inputs: List[tf.Tensor],
     fig.show()
 
 
-@tf.function
-def train_step(
-        generator: tf.keras.Model,
-        generator_optimizer: tf.keras.optimizers.Optimizer,
-        discriminator: tf.keras.Model,
-        discriminator_optimizer: tf.keras.optimizers.Optimizer,
-        loss_object: tf.keras.losses.Loss,
-        inputs: List[tf.Tensor],
-        target: tf.Tensor,
-        epoch: int,
-        summary_writer: Optional[tf.summary.SummaryWriter] = None) -> None:
-    """Trains the models for one (1) epoch.
+class Model():
+    def Build(train_ds: tf.data.Dataset, test_ds: tf.data.Dataset, epochs: int,
+              num_cells: int) -> "Model":
+        generator = _make_generator()
+        generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
+        discriminator = _make_discriminator()
+        discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
+        loss_object = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+        return Model(generator, generator_optimizer, discriminator,
+                     discriminator_optimizer, loss_object, train_ds, test_ds,
+                     epochs, num_cells)
 
-  See https://www.tensorflow.org/tutorials/generative/pix2pix#training.
+    def __init__(self,
+                 generator: tf.keras.Model,
+                 generator_optimizer: tf.keras.optimizers.Optimizer,
+                 discriminator: tf.keras.Model,
+                 discriminator_optimizer: tf.keras.optimizers.Optimizer,
+                 loss_object: tf.keras.losses.Loss,
+                 train_ds: tf.data.Dataset,
+                 test_ds: tf.data.Dataset,
+                 epochs: int,
+                 num_cells: int,
+                 lambda_arg: int = 100,
+                 checkpoint: Optional[tf.train.Checkpoint] = None,
+                 checkpoint_prefix: Optional[Text] = None,
+                 summary_writer: tf.summary.SummaryWriter = None):
+        # public
+        self.generator = generator
+        # private
+        self._generator_optimizer = generator_optimizer
+        self._discriminator = discriminator
+        self._discriminator_optimizer = discriminator_optimizer
+        self._loss_object = loss_object
+        self._train_ds = train_ds
+        self._test_ds = test_ds
+        self._epochs = epochs
+        self._num_cells = num_cells
+        self._lambda = lambda_arg
+        self._checkpoint = checkpoint
+        self._checkpoint_prefix = checkpoint_prefix
+        self._summary_writer = summary_writer
 
-  Args:
-    generator: A generator model,
-    generator_optimizer: and an optimizer for the generator.
-    discriminator: A discriminator model,
-    discriminator_optimizer: and an optimizer for the generator.
-    loss_object: A reusable BinaryCrossentropy object.
-    inputs: A list of full-width images of components.
-    target: The human-authored image of the a+b character.
-    epoch: The index of the epoch we're in.
-    summary_writer: A SummaryWriter object for writing.... summaries.
-  """
-    with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-        inp_x = tf.concat(inputs, axis=3)
-        gen_output = generator(inp_x, training=True)
+    def _generator_loss(self, disc_generated_output, gen_output, target):
+        gan_loss = self._loss_object(tf.ones_like(disc_generated_output),
+                                     disc_generated_output)
+        # mean absolute error
+        l1_loss = tf.reduce_mean(tf.abs(target - gen_output))
+        total_gen_loss = gan_loss + (self._lambda * l1_loss)
+        return total_gen_loss, gan_loss, l1_loss
 
-        disc_real_output = discriminator([inp_x, target], training=True)
-        disc_generated_output = discriminator([inp_x, gen_output],
-                                              training=True)
+    def _discriminator_loss(self, disc_real_output,
+                            disc_generated_output) -> float:
+        """Returns discriminator loss.
 
-        gen_total_loss, gen_gan_loss, gen_l1_loss = generator_loss(
-            loss_object, disc_generated_output, gen_output, target)
-        disc_loss = discriminator_loss(loss_object, disc_real_output,
-                                       disc_generated_output)
+        100% the same as
+        https://www.tensorflow.org/tutorials/generative/pix2pix#build_the_discriminator.
 
-    # TODO(ambuc): Should this simply be gen_l1_loss?
-    generator_gradients = gen_tape.gradient(gen_total_loss,
-                                            generator.trainable_variables)
-    discriminator_gradients = disc_tape.gradient(
-        disc_loss, discriminator.trainable_variables)
+        Args:
+          disc_real_output: A set of real images.
+          disc_generated_output: A set of generator images.
 
-    generator_optimizer.apply_gradients(
-        zip(generator_gradients, generator.trainable_variables))
-    discriminator_optimizer.apply_gradients(
-        zip(discriminator_gradients, discriminator.trainable_variables))
+        Returns:
+          The sum of some loss functions.
+        """
+        real_loss = self._loss_object(tf.ones_like(disc_real_output),
+                                      disc_real_output)
+        generated_loss = self._loss_object(
+            tf.zeros_like(disc_generated_output), disc_generated_output)
+        return real_loss + generated_loss
 
-    if summary_writer:
-        with summary_writer.as_default():
-            tf.summary.scalar('gen_total_loss', gen_total_loss, step=epoch)
-            tf.summary.scalar('gen_gan_loss', gen_gan_loss, step=epoch)
-            tf.summary.scalar('gen_l1_loss', gen_l1_loss, step=epoch)
-            tf.summary.scalar('disc_loss', disc_loss, step=epoch)
+    @tf.function
+    def _train_step(self, inputs: List[tf.Tensor], target: tf.Tensor,
+                    epoch: int) -> None:
+        """Trains the models for one (1) epoch.
+      See https://www.tensorflow.org/tutorials/generative/pix2pix#training.
+      """
+        with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
+            inp_x = tf.concat(inputs, axis=3)
+            gen_output = self.generator(inp_x, training=True)
 
+            disc_real_output = self._discriminator([inp_x, target],
+                                                   training=True)
+            disc_generated_output = self._discriminator([inp_x, gen_output],
+                                                        training=True)
 
-def fit(generator: tf.keras.Model,
-        generator_optimizer: tf.keras.optimizers.Optimizer,
-        discriminator: tf.keras.Model,
-        discriminator_optimizer: tf.keras.optimizers.Optimizer,
-        loss_object: tf.keras.losses.Loss,
-        train_ds: tf.data.Dataset,
-        epochs: int,
-        test_ds: tf.data.Dataset,
-        checkpoint: Optional[tf.train.Checkpoint] = None,
-        checkpoint_prefix: Optional[Text] = None,
-        summary_writer: tf.summary.SummaryWriter = None) -> None:
-    """Runs for |epochs| and trains the models.
+            gen_total_loss, gen_gan_loss, gen_l1_loss = self._generator_loss(
+                disc_generated_output, gen_output, target)
+            disc_loss = self._discriminator_loss(disc_real_output,
+                                                 disc_generated_output)
 
-  Args:
-    generator: A generator model,
-    generator_optimizer: and an optimizer for the generator.
-    discriminator: A discriminator model,
-    discriminator_optimizer: and an optimizer for the generator.
-    loss_object: A reusable BinaryCrossentropy object.
-    train_ds:
-    epochs: The number of epochs to train for.
-    test_ds:
-    checkpoint:
-    checkpoint_prefix:
-    summary_writer: A SummaryWriter object for writing.... summaries.
-  """
-    for epoch in range(epochs):
-        start = time.time()
+        # TODO(ambuc): Should this simply be gen_l1_loss?
+        generator_gradients = gen_tape.gradient(
+            gen_total_loss, self.generator.trainable_variables)
+        discriminator_gradients = disc_tape.gradient(
+            disc_loss, self._discriminator.trainable_variables)
 
-        display.clear_output(wait=True)
+        self._generator_optimizer.apply_gradients(
+            zip(generator_gradients, self.generator.trainable_variables))
+        self._discriminator_optimizer.apply_gradients(
+            zip(discriminator_gradients,
+                self._discriminator.trainable_variables))
 
-        for items in test_ds.take(1):
-            inputs = items[:-1]
-            target = items[-1]
-            generate_images(generator, inputs, target)
-        print('Epoch: ', epoch)
+        if self._summary_writer:
+            with self._summary_writer.as_default():
+                tf.summary.scalar('gen_total_loss', gen_total_loss, step=epoch)
+                tf.summary.scalar('gen_gan_loss', gen_gan_loss, step=epoch)
+                tf.summary.scalar('gen_l1_loss', gen_l1_loss, step=epoch)
+                tf.summary.scalar('disc_loss', disc_loss, step=epoch)
 
-        for n, items in train_ds.enumerate():
-            inputs = items[:-1]
-            target = items[-1]
-            print('.', end='')
-            if (n + 1) % 100 == 0:
-                print()
-            train_step(generator, generator_optimizer, discriminator,
-                       discriminator_optimizer, loss_object, inputs, target,
-                       epoch, summary_writer)
-        print()
+    def fit(self):
+        for epoch in range(self._epochs):
+            start = time.time()
 
-        if checkpoint and checkpoint_prefix:
-            checkpoint.save(file_prefix=checkpoint_prefix)
+            display.clear_output(wait=True)
 
-        print('Time taken for epoch {} is {} sec\n'.format(
-            epoch + 1,
-            time.time() - start))
+            for items in self._test_ds.take(1):
+                inputs = items[:-1]
+                target = items[-1]
+                generate_images(self.generator, inputs, target)
+            print('Epoch: ', epoch)
 
-    if checkpoint and checkpoint_prefix:
-        checkpoint.save(file_prefix=checkpoint_prefix)
+            for n, items in self._train_ds.enumerate():
+                inputs = items[:-1]
+                target = items[-1]
+                print('.', end='')
+                if (n + 1) % 100 == 0:
+                    print()
+                self._train_step(inputs, target, epoch)
+            print()
+
+            if self._checkpoint and self._checkpoint_prefix:
+                self._checkpoint.save(file_prefix=self._checkpoint_prefix)
+
+            print('Time taken for epoch {} is {} sec\n'.format(
+                epoch + 1,
+                time.time() - start))
+
+        if self._checkpoint and self._checkpoint_prefix:
+            self._checkpoint.save(file_prefix=self._checkpoint_prefix)

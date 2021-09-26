@@ -57,25 +57,20 @@ class TrainTestClass(googletest.TestCase):
         train_dataset, test_dataset = model_lib.make_datasets(
             'src/testutils/corpus/split-1/0-*.png', num_cells=3)
 
-        generator = model_lib.make_generator()
-        discriminator = model_lib.make_discriminator()
-        loss_object = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-        generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
-        discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
+        model = model_lib.Model.Build(train_dataset,
+                                      test_dataset,
+                                      epochs=1,
+                                      num_cells=3)
+        model.fit()
 
-        epochs = 1
-        model_lib.fit(generator, generator_optimizer, discriminator,
-                      discriminator_optimizer, loss_object, train_dataset,
-                      epochs, test_dataset)
-
-        self.assertEqual(generator.input_shape, (None, 256, 256, 2))
-        self.assertEqual(generator.output_shape, (None, 256, 256, 1))
-        self.assertFalse(generator.run_eagerly)
+        self.assertEqual(model.generator.input_shape, (None, 256, 256, 2))
+        self.assertEqual(model.generator.output_shape, (None, 256, 256, 1))
+        self.assertFalse(model.generator.run_eagerly)
 
         with tempfile.NamedTemporaryFile(mode='w+', suffix=".png") as tmp_file:
             # We can't assert anything about the generated image, but we just
             # want to see that imageutils.predict(generator, ...) doesn't fail.
-            imageutils.predict(generator, _PATH_TO_FONT, '市', '來',
+            imageutils.predict(model.generator, _PATH_TO_FONT, '市', '來',
                                tmp_file.name)
 
         # We want to see that model_lib.generate_images(generator, ...) doesn't
@@ -83,7 +78,7 @@ class TrainTestClass(googletest.TestCase):
         for items in test_dataset.take(1):
             inputs = items[:-1]
             target = items[-1]
-            model_lib.generate_images(generator, inputs, target)
+            model_lib.generate_images(model.generator, inputs, target)
 
 
 if __name__ == "__main__":
