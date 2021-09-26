@@ -54,13 +54,14 @@ class TestClass(googletest.TestCase):
 
 class TrainTestClass(googletest.TestCase):
     def test_train_one_epoch(self):
+        num_cells = 3
         train_dataset, test_dataset = model_lib.make_datasets(
-            'src/testutils/corpus/split-1/0-*.png', num_cells=3)
+            'src/testutils/corpus/split-1/0-*.png', num_cells)
 
-        model = model_lib.Model.Build(train_dataset,
-                                      test_dataset,
-                                      epochs=1,
-                                      num_cells=3)
+        model = model_lib.Model(train_dataset,
+                                test_dataset,
+                                epochs=1,
+                                num_cells=num_cells)
         model.fit()
 
         self.assertEqual(model.generator.input_shape, (None, 256, 256, 2))
