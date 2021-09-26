@@ -29,25 +29,25 @@ class TestClass(googletest.TestCase):
     def test_load_image(self):
         # the input image is [ a | b | a+b ]; we expect each segment to be
         # 256x256.
-        source = Image.open(_PATH_TO_TRAINING_IMAGE)
-        self.assertEqual(source.size, (256 * 3, 256))
-        # assert that the model_lib._load_image() util correctly splits this
-        # into three 256x256 segments.
-        a, b, a_and_b = model_lib._load_image(_PATH_TO_TRAINING_IMAGE)
-        self.assertEqual(a.shape, (256, 256, 1))
-        self.assertEqual(b.shape, (256, 256, 1))
-        self.assertEqual(a_and_b.shape, (256, 256, 1))
+        with Image.open(_PATH_TO_TRAINING_IMAGE) as source:
+            self.assertEqual(source.size, (256 * 3, 256))
+            # assert that the model_lib._load_image() util correctly splits this
+            # into three 256x256 segments.
+            a, b, a_and_b = model_lib._load_image(_PATH_TO_TRAINING_IMAGE)
+            self.assertEqual(a.shape, (256, 256, 1))
+            self.assertEqual(b.shape, (256, 256, 1))
+            self.assertEqual(a_and_b.shape, (256, 256, 1))
 
     def test_load_image_wrong_size(self):
         # This source image is too short,
-        source = Image.open(_PATH_TO_TRAINING_IMAGE_WRONG_SIZE)
-        self.assertEqual(source.size, (256 * 3, 250))
-        # ...but we expect _load_image() to apply
-        # tf.image.resize_with_crop_or_pad() internally.
-        a, b, a_and_b = model_lib._load_image(_PATH_TO_TRAINING_IMAGE)
-        self.assertEqual(a.shape, (256, 256, 1))
-        self.assertEqual(b.shape, (256, 256, 1))
-        self.assertEqual(a_and_b.shape, (256, 256, 1))
+        with Image.open(_PATH_TO_TRAINING_IMAGE_WRONG_SIZE) as source:
+            self.assertEqual(source.size, (256 * 3, 250))
+            # ...but we expect _load_image() to apply
+            # tf.image.resize_with_crop_or_pad() internally.
+            a, b, a_and_b = model_lib._load_image(_PATH_TO_TRAINING_IMAGE)
+            self.assertEqual(a.shape, (256, 256, 1))
+            self.assertEqual(b.shape, (256, 256, 1))
+            self.assertEqual(a_and_b.shape, (256, 256, 1))
 
 
 class TrainTestClass(googletest.TestCase):
