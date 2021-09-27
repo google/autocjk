@@ -161,7 +161,8 @@ def calculate_wrongness(generator,
                         suffix=".png") as actual_file:
         _download_from_glyphwiki(lhs, lhs_file.name)
         _download_from_glyphwiki(rhs, rhs_file.name)
-        imageutils.predict_from_paths(generator, lhs_file.name, rhs_file.name,
+        imageutils.predict_from_paths(generator,
+                                      [lhs_file.name, rhs_file.name],
                                       predicted_file.name)
         _download_from_glyphwiki(character, actual_file.name)
 
