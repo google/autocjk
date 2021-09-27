@@ -14,6 +14,7 @@
 """For usage, see README.md."""
 
 from absl import app
+from absl import logging
 from absl import flags
 from src import imageutils
 from src.utils import decomposer as decomposer_lib
@@ -23,51 +24,66 @@ from typing import Sequence
 import os
 import tensorflow as tf
 
+_INPUT_HELP = "If --input is a single unicode character, we perform "
+"decomposition and attempt to render it. Otherwise, we expect a "
+"well-formed sequence like "
+"'⿰女子' or '⿱占灬' where the first characters is a verb from the "
+"following set: ⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿻."
 _FONT_PATH = flags.DEFINE_string("font_path", None, "Font file to use.")
-_LHS = flags.DEFINE_string(
-    "lhs",
-    None,
-    "Left-hand character. Either --chr must be set, or both --lhs "
-    "and --rhs must be set.")
-_RHS = flags.DEFINE_string(
-    "rhs",
-    None,
-    "Right-hand character. Either --chr must be set, or both --lhs "
-    "and --rhs must be set.")
-_CHR = flags.DEFINE_string(
-    "chr",
-    None,
-    "Character. Either --chr must be set, or both --lhs and --rhs "
-    "must be set.")
+_INPUT = flags.DEFINE_string("input", "", _INPUT_HELP)
 _OUT = flags.DEFINE_string("out", "/tmp/out.png",
                            "Path to write the predicted image.")
+
+_VERBS = frozenset("⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿻")
+_GENERATOR_BY_VERB = {"⿰": generator_lib.PATH_TO_GENERATOR}
 
 
 def main(argv: Sequence[str]) -> None:
     if len(argv) > 1:
         raise app.UsageError("Too many command-line arguments.")
-    if not _CHR.value and not (_LHS.value and _RHS.value):
-        raise app.UsageError(
-            "Either --chr must be set, or both --lhs and --rhs must be set.")
     if not _FONT_PATH.value:
         raise app.UsageError("Must provide a --font_path.")
 
-    lhs, rhs = None, None
-    if _CHR.value:
-        decomposition = decomposer_lib.Decomposer().decompose(
-            input_region=region_lib.Region.G, character=_CHR.value).decomposition
-        if decomposition[0] != "⿰":
-            raise app.UsageError(
-                "If providing --chr, must provide a character which decomposes "
-                "to ⿰XY according to /third_party/IDS.txt. See "
-                "https://github.com/google/autocjk/issues/22.")
-        lhs, rhs = decomposition[1], decomposition[2]
-    else:
-        lhs, rhs = _LHS.value, _RHS.value
+    input = _INPUT.value
+    if len(input) == 0:
+        raise app.UsageError("--inputs must be set.")
 
-    # Load in the generator,
-    generator = tf.keras.models.load_model(generator_lib.PATH_TO_GENERATOR)
-    imageutils.predict(generator, _FONT_PATH.value, [lhs, rhs], _OUT.value)
+    verb = None
+    nouns = None
+    if len(input) == 1:
+        decomposition = decomposer_lib.Decomposer().decompose(
+            input_region=region_lib.Region.G, character=input[0]).decomposition
+        if decomposition == input:
+            raise app.UsageError(
+                "Cannot decompose and render a character without a decomposition. See ids.txt."
+            )
+        verb = decomposition[0]
+        nouns = decomposition[1:]
+    elif len(input) == 2:
+        raise app.UsageError("--input must not be of length two. " +
+                             _INPUT_HELP)
+    elif input[0] not in _VERBS:
+        raise app.UsageError(
+            "If --input is an ideographic description "
+            "sequence, the first character must be a verb from the following "
+            "set: ⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿻.")
+    else:
+        verb = input[0]
+        nouns = input[1:]
+
+    logging.info(f"Running on components: {nouns}")
+    logging.info(f"Using verb: {verb}")
+
+    if verb not in _GENERATOR_BY_VERB.keys():
+        raise app.UsageError(
+            f"Please use a supported verb from {_GENERATOR_BY_VERB.keys()}. "
+            "See https://github.com/google/autocjk/issues/22.")
+
+    generator_path = _GENERATOR_BY_VERB[verb]
+    logging.info(f"Using generator at path: {generator_path}")
+    generator = tf.keras.models.load_model(generator_path)
+
+    imageutils.predict(generator, _FONT_PATH.value, nouns, _OUT.value)
 
 
 if __name__ == "__main__":
