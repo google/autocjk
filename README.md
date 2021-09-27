@@ -21,8 +21,7 @@ write the generated image to `/tmp/out.png` with:
 ```
 bazel run //src:main -- \
   --font_path=<path_to_font> \
-  --lhs='市' \
-  --rhs='來' \
+  --input='⿰市來' \
   --out=/tmp/out.png
 ```
 

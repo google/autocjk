@@ -14,12 +14,13 @@
 
 from PIL import Image
 from tensorflow.python.platform import googletest
+from typing import Text
 import imagehash
 import os
 import subprocess
 import tempfile
 
-_PATH_TO_FONT = "src/testutils/NotoSerifCJKsc-Regular.otf"
+_PATH_TO_FONT = os.path.abspath("src/testutils/NotoSerifCJKsc-Regular.otf")
 _PATH_TO_EXPECTED_2CF56 = "src/testutils/predicted-2CF56.png"
 _PATH_TO_EXPECTED_653E = "src/testutils/predicted-653E.png"
 
@@ -28,87 +29,92 @@ _PATH_TO_EXPECTED_653E = "src/testutils/predicted-653E.png"
 _EXPECTED_VARIANCE = 10
 
 
+def imagehash_difference_by_path(path1: Text, path2: Text) -> int:
+    image1 = Image.open(path1)
+    image2 = Image.open(path2)
+
+    hash1 = imagehash.average_hash(image1)
+    hash2 = imagehash.average_hash(image2)
+    return hash1 - hash2
+
+
 # Run main.py on Serif SC Regular, predict one character, and compare it
 # to a golden file.
 class TestMain(googletest.TestCase):
-    def test_successful_run_lhs_and_rhs(self):
+    def test_successful_run_inputs_split_1(self):
         with tempfile.NamedTemporaryFile(mode='w+', suffix=".png") as tmp_file:
             self.assertCommandSucceeds(command=[
-                'src/main', '--font_path', os.path.abspath(_PATH_TO_FONT),
-                '--lhs=市', '--rhs=來', '--out', tmp_file.name,
-            ], env={'PATH': os.environ['PATH'], })
-
-            image_actual = Image.open(tmp_file.name)
-            image_expected = Image.open(_PATH_TO_EXPECTED_2CF56)
-
-            hash_actual = imagehash.average_hash(image_actual)
-            hash_expected = imagehash.average_hash(image_expected)
+                'src/main',
+                f'--font_path={_PATH_TO_FONT}',
+                '--input=⿰市來',
+                f'--out={ tmp_file.name}',
+            ],
+                env={'PATH': os.environ['PATH']})
 
             self.assertLessEqual(
-                hash_actual - hash_expected, _EXPECTED_VARIANCE)
+                imagehash_difference_by_path(tmp_file.name,
+                                             _PATH_TO_EXPECTED_2CF56),
+                _EXPECTED_VARIANCE)
 
-    def test_successful_run_chr(self):
+    def test_successful_run_inputs_single_character_decomposition(self):
         with tempfile.NamedTemporaryFile(mode='w+', suffix=".png") as tmp_file:
             self.assertCommandSucceeds(command=[
-                'src/main', '--font_path', os.path.abspath(_PATH_TO_FONT),
-                '--chr=放', '--out', tmp_file.name,
-            ], env={'PATH': os.environ['PATH'], })
-
-            image_actual = Image.open(tmp_file.name)
-            image_expected = Image.open(_PATH_TO_EXPECTED_653E)
-
-            hash_actual = imagehash.average_hash(image_actual)
-            hash_expected = imagehash.average_hash(image_expected)
+                'src/main',
+                f'--font_path={_PATH_TO_FONT}',
+                '--input=放',
+                f'--out={tmp_file.name}',
+            ],
+                env={'PATH': os.environ['PATH']})
 
             self.assertLessEqual(
-                hash_actual - hash_expected, _EXPECTED_VARIANCE)
+                imagehash_difference_by_path(tmp_file.name,
+                                             _PATH_TO_EXPECTED_653E),
+                _EXPECTED_VARIANCE)
+
+    def test_failed_run_inputs_split_1(self):
+        with tempfile.NamedTemporaryFile(mode='w+', suffix=".png") as tmp_file:
+            self.assertCommandFails(
+                command=[
+                    'src/main',
+                    f'--font_path={_PATH_TO_FONT}',
+                    '--input=占灬',  # One must specify the verb here.
+                    f'--out={tmp_file.name}',
+                ],
+                env={'PATH': os.environ['PATH']},
+                regexes=[".*input must not be of length two.*"])
+
+    def test_failed_run_inputs_split_2(self):
+        with tempfile.NamedTemporaryFile(mode='w+', suffix=".png") as tmp_file:
+            self.assertCommandFails(
+                command=[
+                    'src/main',
+                    f'--font_path={_PATH_TO_FONT}',
+                    '--input=⿱占灬',
+                    f'--out={tmp_file.name}',
+                ],
+                env={'PATH': os.environ['PATH']},
+                regexes=[".*Please use a supported verb.*"])
 
     def test_no_font_path(self):
-        self.assertCommandFails(
-            command=[
-                'src/main',
-                '--lhs=市',
-                '--rhs=來'],
-            env={
-                'PATH': os.environ['PATH'],
-            },
+        self.assertCommandFails(command=['src/main', '--input=市'],
+                                env={
+                                    'PATH': os.environ['PATH'],
+        },
             regexes=[".*Must provide a --font_path.*"])
 
-    def test_no_rhs(self):
+    def test_invalid_character(self):
         self.assertCommandFails(
             command=[
                 'src/main',
-                '--font_path',
-                os.path.abspath(_PATH_TO_FONT),
-                '--lhs=来'],
+                f'--font_path={_PATH_TO_FONT}',
+                '--input=来',
+            ],
             env={
                 'PATH': os.environ['PATH'],
             },
-            regexes=[".*Either --chr must be set, or both --lhs and --rhs must be set..*"])
-
-    def test_no_lhs(self):
-        self.assertCommandFails(
-            command=[
-                'src/main',
-                '--font_path',
-                os.path.abspath(_PATH_TO_FONT),
-                '--rhs=来'],
-            env={
-                'PATH': os.environ['PATH'],
-            },
-            regexes=[".*Either --chr must be set, or both --lhs and --rhs must be set..*"])
-
-    def test_invalid_chr(self):
-        self.assertCommandFails(
-            command=[
-                'src/main',
-                '--font_path',
-                os.path.abspath(_PATH_TO_FONT),
-                '--chr=来'],
-            env={
-                'PATH': os.environ['PATH'],
-            },
-            regexes=[".*If providing --chr, must provide a character which decomposes to.*"])
+            regexes=[
+                ".*Cannot decompose and render a character without a decomposition. See ids.txt..*"
+            ])
 
 
 if __name__ == "__main__":
