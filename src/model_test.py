@@ -71,8 +71,41 @@ class TrainTestClass(googletest.TestCase):
         with tempfile.NamedTemporaryFile(mode='w+', suffix=".png") as tmp_file:
             # We can't assert anything about the generated image, but we just
             # want to see that imageutils.predict(generator, ...) doesn't fail.
-            imageutils.predict(model.generator, _PATH_TO_FONT, '市', '來',
-                               tmp_file.name)
+            imageutils.predict(model.generator, _PATH_TO_FONT, [
+                '市',
+                '來',
+            ], tmp_file.name)
+
+        # We want to see that model_lib.generate_images(generator, ...) doesn't
+        # fail.
+        for items in test_dataset.take(1):
+            inputs = items[:-1]
+            target = items[-1]
+            model_lib.generate_images(model.generator, inputs, target)
+
+    def test_train_one_epoch_split_3(self):
+        num_cells = 4
+        train_dataset, test_dataset = model_lib.make_datasets(
+            'src/testutils/corpus/split-3/0-*.png', num_cells)
+
+        model = model_lib.Model(train_dataset,
+                                test_dataset,
+                                epochs=1,
+                                num_cells=num_cells)
+        model.fit()
+
+        self.assertEqual(model.generator.input_shape, (None, 256, 256, 3))
+        self.assertEqual(model.generator.output_shape, (None, 256, 256, 1))
+        self.assertFalse(model.generator.run_eagerly)
+
+        with tempfile.NamedTemporaryFile(mode='w+', suffix=".png") as tmp_file:
+            # We can't assert anything about the generated image, but we just
+            # want to see that imageutils.predict(generator, ...) doesn't fail.
+            imageutils.predict(model.generator, _PATH_TO_FONT, [
+                '市',
+                '口',
+                '來',
+            ], tmp_file.name)
 
         # We want to see that model_lib.generate_images(generator, ...) doesn't
         # fail.

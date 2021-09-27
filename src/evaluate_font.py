@@ -125,7 +125,8 @@ def calculate_wrongness(generator,
         imageutils.write_character(_FONT_PATH.value, character,
                                    actual_file.name)
 
-        imageutils.predict_from_paths(generator, lhs_file.name, rhs_file.name,
+        imageutils.predict_from_paths(generator,
+                                      [lhs_file.name, rhs_file.name],
                                       predicted_file.name)
 
         if out_dir:

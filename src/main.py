@@ -67,7 +67,7 @@ def main(argv: Sequence[str]) -> None:
 
     # Load in the generator,
     generator = tf.keras.models.load_model(generator_lib.PATH_TO_GENERATOR)
-    imageutils.predict(generator, _FONT_PATH.value, lhs, rhs, _OUT.value)
+    imageutils.predict(generator, _FONT_PATH.value, [lhs, rhs], _OUT.value)
 
 
 if __name__ == "__main__":

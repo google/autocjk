@@ -24,8 +24,7 @@ import tempfile
 import tensorflow as tf
 
 _HB_VIEW_PATH = flags.DEFINE_string(
-    "hb_view_path",
-    "hb-view",
+    "hb_view_path", "hb-view",
     "Path to harfbuzz's hb-view util. Assume this is on the PATH by default.")
 
 
@@ -106,30 +105,29 @@ def write_dataimage(font_path: Text, inputs: List[Text], out_path: Text):
                       out_path=out_path)
 
 
-def predict_from_paths(generator, lhs_path: Text, rhs_path: Text,
-                       out_path: Text):
+def predict_from_paths(generator, input_paths: List[Text], out_path: Text):
     """Given a generator, font and components, renders predicted chr to out_path.
 
   Args:
     generator: A keras.Model to use to generate characters.
+    input_paths: The paths to the 256x256 images of the components
     lhs_path: The path to the 256x256 image of the LHS component.
     rhs_path: The path to the 256x256 image of the RHS component.
     out_path: The path to write the rendered image.
   """
 
     # Load those images in again.
-    lhs_image = tf.image.decode_png(tf.io.read_file(lhs_path),
-                                    channels=1)  # greyscale
-    rhs_image = tf.image.decode_png(tf.io.read_file(rhs_path),
-                                    channels=1)  # greyscale
+    images = [
+        tf.image.decode_png(tf.io.read_file(path), channels=1)
+        for path in input_paths
+    ]  # greyscale
 
     # Create tf.Tensor[256,256,1] tensors of the LHS and RHS images.
-    lhs_image = tf.cast(lhs_image, tf.float32)
-    rhs_image = tf.cast(rhs_image, tf.float32)
+    images = [tf.cast(image, tf.float32) for image in images]
 
     # Create a tf.Tensor[256,256,2] tensor of the LHS and RHS images
     # superimposed.
-    inputs = tf.concat([lhs_image, rhs_image], 2)
+    inputs = tf.concat(images, axis=2)
 
     # ...and predict an image.
     # NB: I don't quite understand why, but setting |training=False| here results
@@ -140,7 +138,7 @@ def predict_from_paths(generator, lhs_path: Text, rhs_path: Text,
     tf.keras.preprocessing.image.array_to_img(output[0]).save(out_path)
 
 
-def predict(generator, font_path: Text, lhs: Text, rhs: Text, out_path: Text):
+def predict(generator, font_path: Text, inputs: List[Text], out_path: Text):
     """Given a generator, font and components, renders predicted chr.
 
   to out_path.
@@ -148,18 +146,19 @@ def predict(generator, font_path: Text, lhs: Text, rhs: Text, out_path: Text):
   Args:
     generator: A keras.Model to use to generate characters.
     font_path: The path to the font from which to pull images of components.
-    lhs: The left-hand component. In 你, 亻.
-    rhs: The right-hand component. In 你, 尔.
+    inputs: The components. In 你, [亻, 尔].
     out_path: The path to write the rendered image.
   """
     # Create a local tempfile to write to, and write the characters to it.
-    with tempfile.NamedTemporaryFile(
-            suffix=".png") as lhs_file, tempfile.NamedTemporaryFile(
-                suffix=".png") as rhs_file:
-        write_character(font_path, lhs, lhs_file.name)
-        write_character(font_path, rhs, rhs_file.name)
-
-        predict_from_paths(generator, lhs_file.name, rhs_file.name, out_path)
+    tmpfiles = [
+        tempfile.NamedTemporaryFile(suffix=".png") for i in range(len(inputs))
+    ]
+    for idx, input in enumerate(inputs):
+        write_character(font_path, input, tmpfiles[idx].name)
+    predict_from_paths(generator, [tmpfile.name for tmpfile in tmpfiles],
+                       out_path)
+    for tmpfile in tmpfiles:
+        del tmpfile
 
 
 def superimpose(a_path: Text, b_path: Text, out_path: Text):
