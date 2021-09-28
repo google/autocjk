@@ -35,7 +35,10 @@ _OUT = flags.DEFINE_string("out", "/tmp/out.png",
                            "Path to write the predicted image.")
 
 _VERBS = frozenset("⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿻")
-_GENERATOR_BY_VERB = {"⿰": generator_lib.PATH_TO_GENERATOR}
+_GENERATOR_BY_VERB = {
+    "⿰": generator_lib.PATH_TO_GENERATOR_SPLIT_1,
+    "⿱": generator_lib.PATH_TO_GENERATOR_SPLIT_2,
+}
 
 
 def main(argv: Sequence[str]) -> None:
