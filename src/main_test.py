@@ -23,6 +23,7 @@ import tempfile
 _PATH_TO_FONT = os.path.abspath("src/testutils/NotoSerifCJKsc-Regular.otf")
 _PATH_TO_EXPECTED_2CF56 = "src/testutils/predicted-2CF56.png"
 _PATH_TO_EXPECTED_653E = "src/testutils/predicted-653E.png"
+_PATH_TO_EXPECTED_70B9 = "src/testutils/predicted-70B9.png"
 
 # There's a bit of variance between runs. The value below
 # passes with --runs_per_test=1000 --runs_per_test_detects_flakes.
@@ -85,15 +86,19 @@ class TestMain(googletest.TestCase):
 
     def test_failed_run_inputs_split_2(self):
         with tempfile.NamedTemporaryFile(mode='w+', suffix=".png") as tmp_file:
-            self.assertCommandFails(
+            self.assertCommandSucceeds(
                 command=[
                     'src/main',
                     f'--font_path={_PATH_TO_FONT}',
                     '--input=⿱占灬',
                     f'--out={tmp_file.name}',
                 ],
-                env={'PATH': os.environ['PATH']},
-                regexes=[".*Please use a supported verb.*"])
+                env={'PATH': os.environ['PATH']})
+
+            self.assertLessEqual(
+                imagehash_difference_by_path(tmp_file.name,
+                                             _PATH_TO_EXPECTED_70B9),
+                _EXPECTED_VARIANCE)
 
     def test_no_font_path(self):
         self.assertCommandFails(command=['src/main', '--input=市'],

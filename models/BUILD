@@ -11,7 +11,8 @@ exports_files([
 filegroup(
     name = "generator",
     srcs = [
-        "generator.h5",
+        "generator-split1.h5",  # horizontal
+        "generator-split2.h5",  # vertical
     ],
 )
 
